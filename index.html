@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ec407a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>💖 ข้อความพิเศษ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: 'Sarabun', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 50%, #ffc3a0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .heart {
+    position: absolute;
+    bottom: -50px;
+    font-size: 24px;
+    opacity: 0.6;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(200,80,100,0.35);
+    padding: 40px 32px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    animation: popIn 0.6s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.9) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .lock-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: swing 2.5s ease-in-out infinite;
+    display: inline-block;
+    transform-origin: top center;
+  }
+  @keyframes swing {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+
+  h1 { font-size: 22px; color: #c2185b; margin-bottom: 6px; }
+  p.sub { color: #9a5468; font-size: 14px; margin-bottom: 24px; }
+
+  input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #f3b6c4;
+    border-radius: 14px;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 3px;
+    outline: none;
+    transition: 0.25s;
+    background: #fff;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="password"]:focus { border-color: #e91e63; box-shadow: 0 0 0 4px rgba(233,30,99,0.12); }
+
+  .unlock-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ec407a, #d81b60);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+    box-shadow: 0 8px 20px rgba(216,27,96,0.35);
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .unlock-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(216,27,96,0.45); }
+  .unlock-btn:active { transform: translateY(0); }
+
+  .error-msg { color: #e53935; font-size: 13px; margin-top: 10px; height: 16px; animation: shake 0.4s; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+  .hidden { display: none !important; }
+
+  .reveal-title { font-size: 24px; color: #c2185b; margin-bottom: 4px; }
+  .reveal-sub { color: #9a5468; font-size: 13px; margin-bottom: 20px; min-height: 4px; }
+
+  .msg-box {
+    background: #fff5f7;
+    border: 2px dashed #f3b6c4;
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 16px;
+    color: #6b3140;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    text-align: left;
+    word-break: break-word;
+  }
+
+  .media-slot {
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: #fce4ec;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .media-slot img, .media-slot video { width: 100%; display: block; max-height: 320px; object-fit: cover; }
+  .placeholder-text { color: #c48a9a; font-size: 13px; padding: 24px; }
+
+  .upload-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .upload-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid #f3b6c4;
+    background: #fff;
+    color: #d81b60;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .upload-btn:active { background: #fff0f4; }
+  input[type="file"] { display: none; }
+
+  textarea {
+    width: 100%;
+    border: 2px solid #f3b6c4;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  textarea:focus { border-color: #e91e63; }
+
+  input[type="text"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ab47bc, #8e24aa);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .save-btn:active { transform: translateY(-1px); }
+  .save-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+  .toggle-edit {
+    margin-top: 14px;
+    background: none;
+    border: none;
+    color: #ad1457;
+    font-size: 22px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .section-label { font-size: 12px; color: #ad1457; font-weight: 700; margin: 14px 0 6px; text-align: left; }
+
+  .status-msg { font-size: 12px; margin-top: 8px; min-height: 16px; }
+  .status-msg.ok { color: #2e7d32; }
+  .status-msg.err { color: #e53935; }
+  .status-msg.loading { color: #9a5468; }
+
+  .page { display: block; }
+
+  .nav-btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ffb74d, #fb8c00);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: 0.25s;
+    box-shadow: 0 8px 20px rgba(251,140,0,0.3);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .nav-btn:active { transform: translateY(-2px); }
+
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: #ad1457;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .edit-fab {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .candle-title { font-size: 20px; color: #c2185b; margin-bottom: 16px; }
+
+  /* ---------- envelope ---------- */
+  .envelope-scene {
+    width: 260px;
+    max-width: 100%;
+    margin: 20px auto 10px;
+    position: relative;
+    height: 300px;
+  }
+  .envelope {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    margin-top: 130px;
+  }
+  .envelope-back {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    border-radius: 8px;
+    box-shadow: 0 14px 26px rgba(216,27,96,0.35);
+    z-index: 1;
+    overflow: hidden;
+  }
+  .envelope-back::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0; height: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-bottom: 60px solid #f06292;
+    opacity: 0.85;
+  }
+  .letter {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: 20px;
+    background: #fffaf5;
+    border-radius: 10px;
+    padding: 22px 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+    z-index: 4;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+    transition: all 1s ease;
+    pointer-events: none;
+    max-height: 150px;
+    overflow: hidden;
+  }
+  .letter.rise {
+    opacity: 1;
+    transform: translateY(-190px) scale(1);
+    pointer-events: auto;
+  }
+  .envelope-flap-top {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 0;
+    z-index: 3;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-top: 78px solid #ec407a;
+    transform-origin: top center;
+    transition: transform 0.9s ease;
+    backface-visibility: hidden;
+  }
+  .envelope-flap-top.open { transform: rotateX(180deg); }
+
+  .letter-emojis { font-size: 34px; letter-spacing: 8px; margin-bottom: 12px; }
+  .letter-image-slot {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fce4ec;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  .letter-image-slot img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+  .placeholder-text-sm { color: #c48a9a; font-size: 12px; padding: 14px; }
+
+  @media (max-width: 480px) {
+    .card {
+      padding: 30px 20px;
+      border-radius: 20px;
+    }
+    h1 { font-size: 20px; }
+    input[type="password"], input[type="text"], textarea {
+      font-size: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="card">
+
+  <!-- LOCK SCREEN -->
+  <div id="lockScreen">
+    <div class="lock-icon">💌</div>
+    <h1>ข้อความพิเศษถูกล็อกไว้</h1>
+    <p class="sub">กรอกรหัสผ่านเพื่อเปิดอ่านนะ</p>
+    <input type="password" id="pwInput" placeholder="รหัสผ่าน" maxlength="30">
+    <button class="unlock-btn" onclick="tryUnlock()">🔓 ปลดล็อก</button>
+    <div class="error-msg" id="errMsg"></div>
+  </div>
+
+  <!-- PAGE 1: MAIN GREETING -->
+  <div id="page1" class="page hidden">
+    <div class="reveal-title" id="viewTitle">💖 ถึงคนพิเศษ</div>
+    <div class="reveal-sub" id="loadStatus"></div>
+
+    <div class="msg-box" id="viewMessage">แตะปุ่ม 🎂 ด้านล่างเพื่อเขียนคำอวยพรของคุณ 💕</div>
+
+    <div class="media-slot" id="imgSlot">
+      <span class="placeholder-text">ยังไม่มีรูปภาพ</span>
+    </div>
+
+    <div class="media-slot" id="vidSlot">
+      <span class="placeholder-text">ยังไม่มีรูปภาพ</span>
+    </div>
+
+    <div class="media-slot" id="audioSlot" style="min-height:60px;">
+      <span class="placeholder-text">ยังไม่มีเสียงเพลง</span>
+    </div>
+
+    <button class="toggle-edit" onclick="toggleEdit()">🎂</button>
+
+    <!-- EDIT PANEL -->
+    <div id="editPanel" class="hidden" style="margin-top:14px; text-align:left;">
+      <div class="section-label">หัวข้อ</div>
+      <input type="text" id="editTitle" style="width:100%; padding:10px; border:2px solid #f3b6c4; border-radius:12px; font-size:14px; margin-bottom:10px;" placeholder="เช่น 💖 สุขสันต์วันเกิดนะ!">
+
+      <div class="section-label">ข้อความอวยพร</div>
+      <textarea id="editMessage" placeholder="เขียนคำอวยพรที่นี่..."></textarea>
+
+      <div class="section-label">รูปภาพ</div>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('imgInput').click()">📷 เลือกรูปภาพ</button>
+        <button class="upload-btn" onclick="clearMedia('image')">🗑️ ลบรูป</button>
+      </div>
+      <input type="file" id="imgInput" accept="image/*" onchange="handleFile(event, 'image')">
+
+      <div class="section-label">รูปภาพเพิ่มเติม</div>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('vidInput').click()">📷 เลือกรูปภาพ</button>
+        <button class="upload-btn" onclick="clearMedia('video')">🗑️ ลบรูป</button>
+      </div>
+      <input type="file" id="vidInput" accept="image/*" onchange="handleFile(event, 'video')">
+
+      <div class="section-label">เสียงเพลง / เสียงร้อง</div>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('audioInput').click()">🎵 เลือกไฟล์เสียง</button>
+        <button class="upload-btn" onclick="clearMedia('audio')">🗑️ ลบเสียง</button>
+      </div>
+      <input type="file" id="audioInput" accept="audio/*" onchange="handleFile(event, 'audio')">
+
+      <div class="section-label">คลิปหน้าเป่าเทียน</div>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('candleInput').click()">🕯️ เลือกคลิปเป่าเทียน</button>
+        <button class="upload-btn" onclick="clearMedia('candleVideo')">🗑️ ลบคลิป</button>
+      </div>
+      <input type="file" id="candleInput" accept="video/*" onchange="handleFile(event, 'candleVideo')">
+
+      <div class="section-label">รูปในจดหมาย (ใส่ได้ 1 รูป)</div>
+      <div class="upload-row">
+        <button class="upload-btn" onclick="document.getElementById('letterImgInput').click()">💌 เลือกรูปในจดหมาย</button>
+        <button class="upload-btn" onclick="clearMedia('letterImage')">🗑️ ลบรูป</button>
+      </div>
+      <input type="file" id="letterImgInput" accept="image/*" onchange="handleFile(event, 'letterImage')">
+
+      <button class="save-btn" id="saveBtn" onclick="saveContent()">💾 บันทึกข้อความนี้</button>
+      <div class="status-msg" id="saveStatus"></div>
+    </div>
+
+    <button class="nav-btn" onclick="goToPage('page2')">กดแล้วตั้งใจอธิฐานนะ🙏🙏🙏</button>
+  </div>
+
+  <!-- PAGE 2: CANDLE -->
+  <div id="page2" class="page hidden">
+    <div class="top-row">
+      <button class="back-btn" onclick="goToPage('page1')">← ย้อนกลับ</button>
+      <button class="edit-fab" onclick="openEditFromOtherPage()">🎂</button>
+    </div>
+    <div class="candle-title">🎂 ได้เวลาอธิษฐานแล้ว</div>
+
+    <div class="media-slot" id="candleVidSlot">
+      <span class="placeholder-text">ยังไม่มีคลิปเป่าเทียน</span>
+    </div>
+
+    <button class="nav-btn" onclick="goToPage('page3')">🕯️ เป่าเทียน</button>
+  </div>
+
+  <!-- PAGE 3: ENVELOPE -->
+  <div id="page3" class="page hidden">
+    <div class="top-row">
+      <button class="back-btn" onclick="goToPage('page2')">← ย้อนกลับ</button>
+      <button class="edit-fab" onclick="openEditFromOtherPage()">🎂</button>
+    </div>
+    <div class="candle-title">🎁 ขอให้สมหวังทุกอย่างนะ</div>
+
+    <div class="envelope-scene">
+      <div class="envelope">
+        <div class="envelope-back"></div>
+        <div class="letter" id="letterEl">
+          <div class="letter-emojis">🐣💖💸</div>
+          <div class="letter-image-slot" id="letterImgSlot">
+            <span class="placeholder-text-sm">ไม่มีรูปในจดหมาย</span>
+          </div>
+        </div>
+        <div class="envelope-flap-top" id="envelopeFlap"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const CORRECT_PASSWORD = "1507";
+  const STORAGE_KEY = "greeting-content";
+
+  let currentData = { title: "", message: "", image: "", video: "", audio: "", candleVideo: "", letterImage: "" };
+
+  // LocalStorage ที่ทำงานได้บนมือถือ
+  const storage = {
+    set: async function(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (e) {
+        console.error('Storage error:', e);
+        return false;
+      }
+    },
+    get: async function(key) {
+      try {
+        const value = localStorage.getItem(key);
+        return { value };
+      } catch (e) {
+        console.error('Storage error:', e);
+        return { value: null };
+      }
+    }
+  };
+
+  function tryUnlock() {
+    const val = document.getElementById('pwInput').value;
+    const err = document.getElementById('errMsg');
+    if (val === CORRECT_PASSWORD) {
+      document.getElementById('lockScreen').classList.add('hidden');
+      goToPage('page1');
+      err.textContent = '';
+      loadContent();
+    } else {
+      err.textContent = 'รหัสผ่านไม่ถูกต้อง ลองอีกครั้งนะ 🥺';
+      document.getElementById('pwInput').value = '';
+    }
+  }
+
+  document.getElementById('pwInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tryUnlock();
+  });
+
+  function goToPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+    if (pageId === 'page2') {
+      const v = document.querySelector('#candleVidSlot video');
+      if (v) { v.currentTime = 0; v.play().catch(() => {}); }
+    }
+    if (pageId === 'page3') {
+      document.getElementById('envelopeFlap').classList.remove('open');
+      document.getElementById('letterEl').classList.remove('rise');
+      setTimeout(openEnvelope, 350);
+    }
+  }
+
+  function openEnvelope() {
+    document.getElementById('envelopeFlap').classList.add('open');
+    setTimeout(() => {
+      document.getElementById('letterEl').classList.add('rise');
+    }, 400);
+  }
+
+  function openEditFromOtherPage() {
+    goToPage('page1');
+    const panel = document.getElementById('editPanel');
+    panel.classList.remove('hidden');
+    document.getElementById('editTitle').value = currentData.title || document.getElementById('viewTitle').textContent;
+    document.getElementById('editMessage').value = currentData.message || '';
+    document.getElementById('saveStatus').textContent = '';
+    document.getElementById('saveStatus').className = 'status-msg';
+  }
+
+  async function loadContent() {
+    const statusEl = document.getElementById('loadStatus');
+    try {
+      const result = await storage.get(STORAGE_KEY);
+      if (result && result.value) {
+        const data = JSON.parse(result.value);
+        currentData = {
+          title: data.title || "", message: data.message || "",
+          image: data.image || "", video: data.video || "", audio: data.audio || "",
+          candleVideo: data.candleVideo || "", letterImage: data.letterImage || ""
+        };
+        applyDataToView();
+        statusEl.textContent = 'โหลดข้อมูลที่บันทึกไว้แล้ว ✅';
+      } else {
+        statusEl.textContent = '';
+      }
+    } catch (e) {
+      statusEl.textContent = '';
+    }
+  }
+
+  function applyDataToView() {
+    if (currentData.title) document.getElementById('viewTitle').textContent = currentData.title;
+    if (currentData.message) document.getElementById('viewMessage').textContent = currentData.message;
+
+    const imgSlot = document.getElementById('imgSlot');
+    imgSlot.innerHTML = currentData.image
+      ? '<img src="' + currentData.image + '" alt="รูปภาพ">'
+      : '<span class="placeholder-text">ยังไม่มีรูปภาพ</span>';
+
+    const vidSlot = document.getElementById('vidSlot');
+    vidSlot.innerHTML = currentData.video
+      ? '<img src="' + currentData.video + '" alt="รูปภาพเพิ่มเติม">'
+      : '<span class="placeholder-text">ยังไม่มีรูปภาพ</span>';
+
+    const audioSlot = document.getElementById('audioSlot');
+    audioSlot.innerHTML = currentData.audio
+      ? '<div style="width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="font-size:20px;">🎵</span><audio src="' + currentData.audio + '" controls autoplay style="width:100%;"></audio></div>'
+      : '<span class="placeholder-text">ยังไม่มีเสียงเพลง</span>';
+
+    const candleSlot = document.getElementById('candleVidSlot');
+    candleSlot.innerHTML = currentData.candleVideo
+      ? '<video src="' + currentData.candleVideo + '" controls autoplay playsinline></video>'
+      : '<span class="placeholder-text">ยังไม่มีคลิปเป่าเทียน</span>';
+
+    const audioEl = audioSlot.querySelector('audio');
+    if (audioEl) { audioEl.play().catch(() => {}); }
+    const videoEl = candleSlot.querySelector('video');
+    if (videoEl) { videoEl.play().catch(() => {}); }
+
+    const letterImgSlot = document.getElementById('letterImgSlot');
+    letterImgSlot.innerHTML = currentData.letterImage
+      ? '<img src="' + currentData.letterImage + '" alt="รูปในจดหมาย">'
+      : '<span class="placeholder-text-sm">ไม่มีรูปในจดหมาย</span>';
+  }
+
+  function toggleEdit() {
+    const panel = document.getElementById('editPanel');
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) {
+      document.getElementById('editTitle').value = currentData.title || document.getElementById('viewTitle').textContent;
+      document.getElementById('editMessage').value = currentData.message || '';
+      document.getElementById('saveStatus').textContent = '';
+      document.getElementById('saveStatus').className = 'status-msg';
+    }
+  }
+
+  function handleFile(event, kind) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      currentData[kind] = e.target.result;
+      applyDataToView();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearMedia(kind) {
+    currentData[kind] = "";
+    applyDataToView();
+  }
+
+  async function saveContent() {
+    const title = document.getElementById('editTitle').value.trim();
+    const msg = document.getElementById('editMessage').value.trim();
+    if (title) currentData.title = title;
+    if (msg) currentData.message = msg;
+    applyDataToView();
+
+    const statusEl = document.getElementById('saveStatus');
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    statusEl.className = 'status-msg loading';
+    statusEl.textContent = 'กำลังบันทึก...';
+
+    try {
+      const payload = JSON.stringify(currentData);
+      const result = await storage.set(STORAGE_KEY, payload);
+      if (result) {
+        statusEl.className = 'status-msg ok';
+        statusEl.textContent = 'บันทึกสำเร็จแล้ว 💾 กลับมาแก้ไขทีหลังได้เลย';
+        setTimeout(() => { document.getElementById('editPanel').classList.add('hidden'); }, 900);
+      } else {
+        throw new Error('save failed');
+      }
+    } catch (e) {
+      statusEl.className = 'status-msg err';
+      statusEl.textContent = 'บันทึกไม่สำเร็จ (ไฟล์อาจใหญ่เกินไป ลองใช้ไฟล์ขนาดเล็กลง)';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // floating hearts decoration
+  const heartEmojis = ['💕','💖','💗','💓','❤️','💞'];
+  const heartsContainer = document.getElementById('hearts');
+  for (let i = 0; i < 14; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    h.style.left = Math.random() * 100 + '%';
+    h.style.animationDuration = (8 + Math.random() * 10) + 's';
+    h.style.animationDelay = (Math.random() * 10) + 's';
+    h.style.fontSize = (16 + Math.random() * 16) + 'px';
+    heartsContainer.appendChild(h);
+  }
+</script>
+
+</body>
+</html>
