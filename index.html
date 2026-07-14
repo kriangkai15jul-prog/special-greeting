@@ -543,16 +543,32 @@
       document.getElementById('lockScreen').classList.add('hidden');
       goToPage('page1');
       err.textContent = '';
-      loadContent();
+      // ข้อมูล (รวมถึงเสียง/วิดีโอ) ถูกโหลดไว้ล่วงหน้าตั้งแต่หน้าล็อกแล้ว
+      // ตรงนี้แค่สั่ง play() ซ้ำแบบ "ทันที" ในตัว click handler เอง
+      // เพื่อให้เบราว์เซอร์นับเป็น user gesture จริงๆ และยอมเล่นเสียงได้
+      playAllMedia();
     } else {
       err.textContent = 'รหัสผ่านไม่ถูกต้อง ลองอีกครั้งนะ 🥺';
       document.getElementById('pwInput').value = '';
     }
   }
 
+  function playAllMedia() {
+    const audioEl = document.querySelector('#audioSlot audio');
+    if (audioEl) { audioEl.muted = false; audioEl.play().catch(() => {}); }
+    const mainVideoEl = document.querySelector('#vidSlot video');
+    if (mainVideoEl) { mainVideoEl.play().catch(() => {}); }
+    const candleVideoEl = document.querySelector('#candleVidSlot video');
+    if (candleVideoEl) { candleVideoEl.play().catch(() => {}); }
+  }
+
   document.getElementById('pwInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') tryUnlock();
   });
+
+  // เริ่มโหลดข้อมูล (รูป/วิดีโอ/เสียง) ล่วงหน้าตั้งแต่ตอนนี้เลย
+  // ก่อนที่ผู้ใช้จะกดปลดล็อกอีก เพื่อให้ตอนกดปุ่ม สื่อพร้อมเล่นทันที
+  loadContent();
 
   function goToPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
@@ -623,7 +639,7 @@
 
     const audioSlot = document.getElementById('audioSlot');
     audioSlot.innerHTML = currentData.audio
-      ? '<div style="width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="font-size:20px;">🎵</span><audio src="' + currentData.audio + '" autoplay style="width:100%; display:none;"></audio></div>'
+      ? '<div style="width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="font-size:20px;">🎵</span><audio src="' + currentData.audio + '" autoplay muted style="width:100%; display:none;"></audio></div>'
       : '<span class="placeholder-text">ยังไม่มีเสียงเพลง</span>';
 
     const candleSlot = document.getElementById('candleVidSlot');
