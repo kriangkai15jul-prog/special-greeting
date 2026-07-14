@@ -392,7 +392,7 @@
     </div>
 
     <div class="media-slot" id="vidSlot">
-      <span class="placeholder-text">ยังไม่มีรูปภาพ</span>
+      <span class="placeholder-text">ยังไม่มีคลิปวิดีโอ</span>
     </div>
 
     <div class="media-slot" id="audioSlot" style="min-height:60px;">
@@ -416,12 +416,12 @@
       </div>
       <input type="file" id="imgInput" accept="image/*" onchange="handleFile(event, 'image')">
 
-      <div class="section-label">รูปภาพเพิ่มเติม</div>
+      <div class="section-label">คลิปวิดีโอ</div>
       <div class="upload-row">
-        <button class="upload-btn" onclick="document.getElementById('vidInput').click()">📷 เลือกรูปภาพ</button>
-        <button class="upload-btn" onclick="clearMedia('video')">🗑️ ลบรูป</button>
+        <button class="upload-btn" onclick="document.getElementById('vidInput').click()">🎥 เลือกคลิปวิดีโอ</button>
+        <button class="upload-btn" onclick="clearMedia('video')">🗑️ ลบคลิป</button>
       </div>
-      <input type="file" id="vidInput" accept="image/*" onchange="handleFile(event, 'video')">
+      <input type="file" id="vidInput" accept="video/*" onchange="handleFile(event, 'video')">
 
       <div class="section-label">เสียงเพลง / เสียงร้อง</div>
       <div class="upload-row">
@@ -618,8 +618,8 @@
 
     const vidSlot = document.getElementById('vidSlot');
     vidSlot.innerHTML = currentData.video
-      ? '<img src="' + currentData.video + '" alt="รูปภาพเพิ่มเติม">'
-      : '<span class="placeholder-text">ยังไม่มีรูปภาพ</span>';
+      ? '<video src="' + currentData.video + '" controls autoplay playsinline></video>'
+      : '<span class="placeholder-text">ยังไม่มีคลิปวิดีโอ</span>';
 
     const audioSlot = document.getElementById('audioSlot');
     audioSlot.innerHTML = currentData.audio
@@ -633,6 +633,8 @@
 
     const audioEl = audioSlot.querySelector('audio');
     if (audioEl) { audioEl.play().catch(() => {}); }
+    const vidSlotVideoEl = vidSlot.querySelector('video');
+    if (vidSlotVideoEl) { vidSlotVideoEl.play().catch(() => {}); }
     const videoEl = candleSlot.querySelector('video');
     if (videoEl) { videoEl.play().catch(() => {}); }
 
@@ -654,7 +656,7 @@
   }
 
   // รูปแบบที่ต้องบีบอัด (เพื่อไม่ให้ไฟล์ใหญ่เกินไปตอนบันทึกขึ้นฐานข้อมูลกลาง)
-  const IMAGE_KINDS = ['image', 'video', 'letterImage'];
+  const IMAGE_KINDS = ['image', 'letterImage'];
 
   function compressImage(file, maxDimension, quality) {
     return new Promise((resolve, reject) => {
