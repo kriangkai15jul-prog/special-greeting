@@ -623,7 +623,7 @@
 
     const audioSlot = document.getElementById('audioSlot');
     audioSlot.innerHTML = currentData.audio
-      ? '<div style="width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="font-size:20px;">🎵</span><audio src="' + currentData.audio + '" controls autoplay style="width:100%;"></audio></div>'
+      ? '<div style="width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:6px;"><span style="font-size:20px;">🎵</span><audio src="' + currentData.audio + '" autoplay style="width:100%; display:none;"></audio></div>'
       : '<span class="placeholder-text">ยังไม่มีเสียงเพลง</span>';
 
     const candleSlot = document.getElementById('candleVidSlot');
