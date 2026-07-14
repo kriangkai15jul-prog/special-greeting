@@ -618,7 +618,7 @@
 
     const vidSlot = document.getElementById('vidSlot');
     vidSlot.innerHTML = currentData.video
-      ? '<video src="' + currentData.video + '" autoplay loop playsinline></video>'
+      ? '<video src="' + currentData.video + '" autoplay loop muted playsinline></video>'
       : '<span class="placeholder-text">ยังไม่มีคลิปวิดีโอ</span>';
 
     const audioSlot = document.getElementById('audioSlot');
@@ -628,7 +628,7 @@
 
     const candleSlot = document.getElementById('candleVidSlot');
     candleSlot.innerHTML = currentData.candleVideo
-      ? '<video src="' + currentData.candleVideo + '" autoplay loop playsinline></video>'
+      ? '<video src="' + currentData.candleVideo + '" autoplay loop muted playsinline></video>'
       : '<span class="placeholder-text">ยังไม่มีคลิปเป่าเทียน</span>';
 
     const audioEl = audioSlot.querySelector('audio');
