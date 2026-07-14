@@ -490,17 +490,35 @@
 
 </div>
 
+<!-- Firebase (ที่เก็บข้อมูลกลาง ใช้ร่วมกันได้ทุกเครื่อง) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database-compat.js"></script>
+
 <script>
   const CORRECT_PASSWORD = "1507";
   const STORAGE_KEY = "greeting-content";
 
   let currentData = { title: "", message: "", image: "", video: "", audio: "", candleVideo: "", letterImage: "" };
 
-  // LocalStorage ที่ทำงานได้บนมือถือ
+  // ---------- Firebase setup ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyBSQ_j-uh-tVqrDPUAncf2RB3CBnXlqks0",
+    authDomain: "hbd-to-my-power-bank.firebaseapp.com",
+    databaseURL: "https://hbd-to-my-power-bank-default-rtdb.firebaseio.com",
+    projectId: "hbd-to-my-power-bank",
+    storageBucket: "hbd-to-my-power-bank.firebasestorage.app",
+    messagingSenderId: "184551166989",
+    appId: "1:184551166989:web:0388c3dd238f313805b144",
+    measurementId: "G-VMG7GPGHRF"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // ที่เก็บข้อมูลกลาง (Firebase Realtime Database) — ทุกเครื่องที่เปิดหน้านี้จะเห็นข้อมูลเดียวกัน
   const storage = {
     set: async function(key, value) {
       try {
-        localStorage.setItem(key, value);
+        await db.ref(key).set(value);
         return true;
       } catch (e) {
         console.error('Storage error:', e);
@@ -509,8 +527,8 @@
     },
     get: async function(key) {
       try {
-        const value = localStorage.getItem(key);
-        return { value };
+        const snapshot = await db.ref(key).once('value');
+        return { value: snapshot.exists() ? snapshot.val() : null };
       } catch (e) {
         console.error('Storage error:', e);
         return { value: null };
@@ -569,6 +587,7 @@
 
   async function loadContent() {
     const statusEl = document.getElementById('loadStatus');
+    statusEl.textContent = 'กำลังโหลดข้อมูล...';
     try {
       const result = await storage.get(STORAGE_KEY);
       if (result && result.value) {
@@ -584,7 +603,7 @@
         statusEl.textContent = '';
       }
     } catch (e) {
-      statusEl.textContent = '';
+      statusEl.textContent = 'โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้าใหม่นะ';
     }
   }
 
@@ -634,15 +653,67 @@
     }
   }
 
+  // รูปแบบที่ต้องบีบอัด (เพื่อไม่ให้ไฟล์ใหญ่เกินไปตอนบันทึกขึ้นฐานข้อมูลกลาง)
+  const IMAGE_KINDS = ['image', 'video', 'letterImage'];
+
+  function compressImage(file, maxDimension, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        img.onload = function() {
+          let { width, height } = img;
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round(height * (maxDimension / width));
+              width = maxDimension;
+            } else {
+              width = Math.round(width * (maxDimension / height));
+              height = maxDimension;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function handleFile(event, kind) {
     const file = event.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      currentData[kind] = e.target.result;
-      applyDataToView();
-    };
-    reader.readAsDataURL(file);
+
+    if (IMAGE_KINDS.includes(kind)) {
+      // บีบอัดรูปภาพให้เล็กลงก่อนเก็บ (เร็วขึ้น ประหยัดเน็ต ไม่เกินขีดจำกัดฐานข้อมูล)
+      compressImage(file, 1000, 0.72).then(function(dataUrl) {
+        currentData[kind] = dataUrl;
+        applyDataToView();
+      }).catch(function() {
+        // ถ้าบีบอัดไม่สำเร็จ (เช่นไฟล์ไม่ใช่รูปที่ canvas อ่านได้) ใช้ไฟล์ต้นฉบับแทน
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentData[kind] = e.target.result;
+          applyDataToView();
+        };
+        reader.readAsDataURL(file);
+      });
+    } else {
+      // เสียง/วิดีโอ: เก็บตามไฟล์ต้นฉบับ (แนะนำให้ใช้ไฟล์สั้นๆ ไม่เกินสิบกว่า MB)
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentData[kind] = e.target.result;
+        applyDataToView();
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function clearMedia(kind) {
@@ -668,14 +739,14 @@
       const result = await storage.set(STORAGE_KEY, payload);
       if (result) {
         statusEl.className = 'status-msg ok';
-        statusEl.textContent = 'บันทึกสำเร็จแล้ว 💾 กลับมาแก้ไขทีหลังได้เลย';
+        statusEl.textContent = 'บันทึกสำเร็จแล้ว 💾 เปิดจากเครื่องไหนก็เห็นเหมือนกันเลย';
         setTimeout(() => { document.getElementById('editPanel').classList.add('hidden'); }, 900);
       } else {
         throw new Error('save failed');
       }
     } catch (e) {
       statusEl.className = 'status-msg err';
-      statusEl.textContent = 'บันทึกไม่สำเร็จ (ไฟล์อาจใหญ่เกินไป ลองใช้ไฟล์ขนาดเล็กลง)';
+      statusEl.textContent = 'บันทึกไม่สำเร็จ (ไฟล์อาจใหญ่เกินไป หรือเน็ตหลุด ลองใหม่อีกครั้งนะ)';
     } finally {
       btn.disabled = false;
     }
